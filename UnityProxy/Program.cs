@@ -10,7 +10,7 @@ namespace UnityProxy
 		/// <summary>
 		/// Magic string our build pipeline writes to the log after a successful build.
 		/// </summary>
-		private const string SuccessMagicString = "Successful build ~0xDEADBEEF";
+		private const string SuccessMagicString = "Exiting batchmode successfully now!";
 
 		static void Main(string[] args)
 		{
@@ -47,7 +47,7 @@ namespace UnityProxy
 				SaveArtifacts(artifactsPath, watcher.FullLog);
 			}
 
-			if (watcher.FullLog.Contains(SuccessMagicString))
+			if (unity.ExitCode == 0 && watcher.FullLog.Contains(SuccessMagicString))
 			{
 				Console.WriteLine("Success.");
 				Environment.Exit(0);
@@ -55,7 +55,7 @@ namespace UnityProxy
 			else
 			{
 				Console.WriteLine("Failure.");
-				Environment.Exit(1);
+				Environment.Exit(unity.ExitCode);
 			}
 		}
 
