@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace UnityProxy
 {
@@ -54,6 +55,8 @@ namespace UnityProxy
 			this.logPath = logPath;
 		}
 
+		private const string FailureMagicString = "Build failure!";
+		public bool Failed;
 		public void Run()
 		{
 			while (true)
@@ -71,12 +74,25 @@ namespace UnityProxy
 							LogProgressMessages(newText);
 							fullLog += newText;
 							Console.Write(newText);
+							if (!Failed)
+							{
+								var lines = newText.Split('\r', '\n');
+								var failure = lines.Where(x => x.Contains(FailureMagicString)).Select(x =>
+										x.Substring(x.IndexOf(FailureMagicString, StringComparison.Ordinal) + FailureMagicString.Length).Trim())
+									.FirstOrDefault();
+
+								if (failure != null)
+								{
+									Failed = true;
+									Console.WriteLine($"##teamcity[buildProblem description='{failure}']");
+								}
+							}
 						}
 					}
 				}
 
 				if (shouldStop) break;
-				
+
 				System.Threading.Thread.Sleep(1000);
 			}
 		}

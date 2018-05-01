@@ -47,7 +47,7 @@ namespace UnityProxy
 				SaveArtifacts(artifactsPath, watcher.FullLog);
 			}
 
-			if (unity.ExitCode == 0 && watcher.FullLog.Contains(SuccessMagicString))
+			if (unity.ExitCode == 0 && watcher.FullLog.Contains(SuccessMagicString) && !watcher.Failed)
 			{
 				Console.WriteLine("Success.");
 				Environment.Exit(0);
@@ -55,7 +55,7 @@ namespace UnityProxy
 			else
 			{
 				Console.WriteLine("Failure.");
-				Environment.Exit(unity.ExitCode);
+				Environment.Exit(watcher.Failed ? 1 : unity.ExitCode);
 			}
 		}
 
