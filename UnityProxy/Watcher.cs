@@ -55,7 +55,8 @@ namespace UnityProxy
 			this.logPath = logPath;
 		}
 
-		private const string FailureMagicString = "Build failure!";
+		private const string FailureString = "Build failure!";
+		private const string ErrorString = "ERROR:";
 		public bool Failed;
 		public void Run()
 		{
@@ -77,14 +78,18 @@ namespace UnityProxy
 							if (!Failed)
 							{
 								var lines = newText.Split('\r', '\n');
-								var failure = lines.Where(x => x.Contains(FailureMagicString)).Select(x =>
-										x.Substring(x.IndexOf(FailureMagicString, StringComparison.Ordinal) + FailureMagicString.Length).Trim())
-									.FirstOrDefault();
 
+								var failures = lines.Where(x => x.Contains(FailureString)).
+									Select(x => x.Substring(x.IndexOf(FailureString, StringComparison.Ordinal) + FailureString.Length).Trim());
+
+								var errors = lines.Where(x => x.Contains(ErrorString)).
+									Select(x => x.Substring(x.IndexOf(ErrorString, StringComparison.Ordinal) + ErrorString.Length).Trim());
+
+								var failure = failures.Concat(errors).FirstOrDefault();
 								if (failure != null)
 								{
 									Failed = true;
-									Console.WriteLine($"##teamcity[buildProblem description='{failure}']");
+									Console.WriteLine($"##teamcity[buildProblem description='{failure.Replace("'","\"")}']");
 								}
 							}
 						}
